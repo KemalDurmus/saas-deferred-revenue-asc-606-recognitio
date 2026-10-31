@@ -1,0 +1,20 @@
+.pl-form label { display: block; margin-bottom: 12px; font-weight: 600; }
+.pl-form textarea, .pl-form input[type=month], .pl-form input[type=number] { width: 100%; box-sizing: border-box; margin-top: 6px; }
+.pl-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.pl-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.drop { position: relative; display: block; border: 2px dashed rgba(128,128,128,.5); border-radius: 12px; padding: 28px 16px; text-align: center; cursor: pointer; overflow-wrap: anywhere; }
+.drop.over { border-color: #4f7cff; background: rgba(79,124,255,.08); }
+.drop input[type=file] { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+table.rt { width: 100%; border-collapse: collapse; }
+table.rt td.num, table.rt th.num { text-align: right; font-variant-numeric: tabular-nums; }
+table.rt tr.anchor td { font-weight: 700; background: rgba(79,124,255,.12); }
+table.rt tfoot td { font-weight: 700; border-top: 2px solid rgba(128,128,128,.5); }
+.card, .stat, td, th { overflow-wrap: anywhere; }
+@media (max-width: 640px) {
+  .pl-row { grid-template-columns: 1fr; }
+  table.rt thead { display: none; }
+  table.rt, table.rt tbody, table.rt tfoot, table.rt tr, table.rt td { display: block; width: 100%; box-sizing: border-box; }
+  table.rt tr { border: 1px solid rgba(128,128,128,.35); border-radius: 10px; margin-bottom: 10px; padding: 6px 10px; }
+  table.rt td { display: flex; justify-content: space-between; gap: 12px; text-align: right !important; border: 0 !important; padding: 4px 0; }
+  table.rt td::before { content: attr(data-label); font-weight: 600; text-align: left; flex: 0 0 48%; }
+}

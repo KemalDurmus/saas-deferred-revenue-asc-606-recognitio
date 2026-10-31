@@ -1,0 +1,39 @@
+[
+  {
+    "method": "GET",
+    "path": "/",
+    "form_fields": []
+  },
+  {
+    "method": "POST",
+    "path": "/analyze",
+    "form_fields": [
+      {
+        "name": "demo",
+        "value": "1"
+      },
+      {
+        "name": "default_months",
+        "value": "12"
+      }
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/analyze",
+    "form_fields": [
+      {
+        "name": "csv_text",
+        "value": "Created (UTC),Amount,Currency,Status,Description\n2026-03-05 10:00:00,588.00,usd,succeeded,Pro plan yearly\n2026-08-03 10:00:00,49.00,usd,succeeded,Starter plan monthly\n2026-09-03 10:00:00,49.00,usd,succeeded,Starter plan monthly"
+      },
+      {
+        "name": "report_month",
+        "value": "2026-10"
+      },
+      {
+        "name": "default_months",
+        "value": "12"
+      }
+    ]
+  }
+]

@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block title %}{{ app_title }}{% endblock %}
+{% block head %}{% set css = url_for('static', filename='planner.css') %}<link rel='stylesheet' href='{{ css }}'>{% endblock %}
+{% block content %}
+<section class='card'>
+  <h2>Ödeme CSV dosyanızı yükleyin</h2>
+  <p class='muted'>Stripe veya Paddle ödeme dışa aktarımını yükleyin ya da yapıştırın. En az bir tutar sütunu (Amount, Gross...) ve bir tarih sütunu (Created (UTC), Date...) gerekir. Aylık/yıllık bilgisi için Interval, Description veya Period Start/End sütunları kullanılır. Yüklediğiniz veri sunucuda saklanmaz.</p>
+  <form method='post' action='/analyze' enctype='multipart/form-data' class='pl-form'>
+    <label class='drop' id='drop'>
+      <input type='file' name='csv_file' id='csv_file' accept='.csv,.txt,text/csv,text/plain'>
+      <span id='drop_text'>CSV dosyasını buraya sürükleyin veya seçmek için tıklayın</span>
+    </label>
+    <label>Ya da CSV içeriğini yapıştırın
+      <textarea name='csv_text' rows='5' placeholder='Created (UTC),Amount,Currency,Status,Description'>{{ form.csv_text }}</textarea>
+    </label>
+    <div class='pl-row'>
+      <label>Rapor ayı
+        <input type='month' name='report_month' value='{{ form.report_month }}'>
+      </label>
+      <label>Süre bulunamazsa varsayılan dönem (ay)
+        <input type='number' name='default_months' min='1' max='60' value='{{ form.default_months }}'>
+      </label>
+    </div>
+    <div class='pl-actions'>
+      <button class='btn' type='submit'>Hesapla</button>
+      <button class='btn btn-secondary' type='submit' name='demo' value='1' formnovalidate>Örnek veriyle dene</button>
+    </div>
+  </form>
+</section>
+
+{% if result %}
+<section class='card'>
+  <h2>Sonuç: {{ result.anchor_label }} raporu</h2>
+  {% if demo %}<p><span class='badge'>Örnek veri</span> <span class='muted'>Bu sonuçlar gömülü demo faturalarla hesaplandı.</span></p>{% endif %}
+  <p class='muted'>{{ result.rows_read }} satır okundu, {{ result.rows_used }} satır hesaplandı. Tablo, rapor ayından önceki 11 ayı, rapor ayını ve sonraki 12 ayı kapsar.</p>
+  {% for w in result.warnings %}<div class='alert alert-warning'>{{ w }}</div>{% endfor %}
+</section>
+
+{% for g in result.groups %}
+<section class='card'>
+  <h2>Para birimi: {{ g.code }} <span class='muted'>({{ g.count }} fatura)</span></h2>
+  <div class='grid'>
+    <div class='stat'><div class='muted'>Son 12 ay tanınan gelir</div><strong>{{ g.past_rec }}</strong></div>
+    <div class='stat'><div class='muted'>Gelecek 12 ay tanınacak (mevcut faturalardan)</div><strong>{{ g.future_rec }}</strong></div>
+    <div class='stat'><div class='muted'>Rapor ayı sonu ertelenmiş gelir</div><strong>{{ g.closing_anchor }}</strong></div>
+    <div class='stat'><div class='muted'>Pencere sonu ertelenmiş gelir</div><strong>{{ g.closing_end }}</strong></div>
+  </div>
+  <table class='rt'>
+    <thead><tr><th>Dönem</th><th>Tür</th><th class='num'>Dönem başı ertelenmiş</th><th class='num'>Faturalanan</th><th class='num'>Tanınan gelir</th><th class='num'>Dönem sonu ertelenmiş</th></tr></thead>
+    <tbody>
+    {% for r in g.rows %}
+      <tr class='{{ r.cls }}'>
+        <td data-label='Dönem'>{{ r.label }}</td>
+        <td data-label='Tür'>{{ r.kind }}</td>
+        <td data-label='Dönem başı ertelenmiş' class='num'>{{ r.opening_s }}</td>
+        <td data-label='Faturalanan' class='num'>{{ r.billed_s }}</td>
+        <td data-label='Tanınan gelir' class='num'>{{ r.recognized_s }}</td>
+        <td data-label='Dönem sonu ertelenmiş' class='num'>{{ r.closing_s }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+    <tfoot><tr><td data-label='Dönem'>Toplam (24 ay)</td><td data-label='Tür'></td><td data-label='Dönem başı ertelenmiş' class='num'></td><td data-label='Faturalanan' class='num'>{{ g.tot_billed }}</td><td data-label='Tanınan gelir' class='num'>{{ g.tot_rec }}</td><td data-label='Dönem sonu ertelenmiş' class='num'></td></tr></tfoot>
+  </table>
+  <p><a class='btn' href='{{ g.csv_uri }}' download='ertelenmis-gelir-{{ g.code }}.csv'>CSV olarak indir</a></p>
+</section>
+{% endfor %}
+{% endif %}
+
+<section class='card'>
+  <h3>Nasıl hesaplanır?</h3>
+  <ul class='muted'>
+    <li>Her fatura, hizmet dönemi boyunca gün sayısına göre eşit yayılır; aylık tutarlar kuruşa yuvarlanır ve toplam fatura tutarına eşittir.</li>
+    <li>CSV'de Period Start/End yoksa hizmet dönemi ödeme tarihinde başlar; süre Interval, Description veya varsayılan aya göre belirlenir.</li>
+    <li>Gelecek aylar yalnızca dosyadaki mevcut faturaları içerir; yenileme veya yeni satış tahmini yapılmaz.</li>
+    <li>Başarısız, iade edilmiş ve sıfır/negatif tutarlı satırlar hesaba katılmaz; kaç satırın atlandığı yukarıda uyarı olarak gösterilir.</li>
+    <li>Yalnızca CSV dışa aktarma sunulur.</li>
+  </ul>
+  <div class='alert alert-warning'>Bu araç bir hesaplama yardımcısıdır; muhasebe veya hukuki tavsiye değildir. Sonuçları mali tablolarda kullanmadan önce muhasebecinizle doğrulayın.</div>
+</section>
+{% endblock %}
+{% block scripts %}{% set js = url_for('static', filename='planner.js') %}<script src='{{ js }}'></script>{% endblock %}
