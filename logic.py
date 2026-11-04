@@ -166,6 +166,7 @@ def parse_anchor(report_month, today):
 
 
 def read_table(text):
+    text = text.replace("\r\n", "\n").replace("\r", "\n")  # eski Mac / karışık satır sonları
     lines = [l for l in text.splitlines() if l.strip()]
     if not lines:
         raise InputError('Okunabilir hiç satır bulunamadı.')
